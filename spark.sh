@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -x 
+
 hadoop_configuration=true
 s3a_fast_upload=true
 s3a_max_connections=100
