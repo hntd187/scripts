@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-
+set -x 
 hadoop_configuration=true
 s3a_fast_upload=true
 s3a_max_connections=100
@@ -21,7 +21,9 @@ spark_url="http://d3kbcqa49mib13.cloudfront.net/spark-$spark_version-bin-without
 hadoop_version="2.7.1"
 hadoop_url="http://apache.arvixe.com/hadoop/common/hadoop-$hadoop_version/hadoop-$hadoop_version.tar.gz"
 
-while [[ $# > 1 ]]
+java=false
+
+while [[ $# > 0 ]]
 do
 i="$1"
   case $i in
@@ -43,6 +45,10 @@ i="$1"
       secret_key="$2"
       shift
     ;;
+    -j|--java)
+      echo "Hit java."
+      java=true
+    ;;
     *)
       echo "Got unknown value: $1 = $2"
     ;;
@@ -50,17 +56,36 @@ i="$1"
   shift
 done
 
+if $java ; then
+  yum=$(which yum)
+  apt=$(which apt-get)
+  brew=$(which brew)
+  if [[ ! -z $apt ]]; then
+    echo "OS: Debian Based, using Apt..."
+    $apt --force-yes install openjdk-8-jdk > /dev/null
+  elif [[ ! -z $yum ]]; then
+    echo "OS: RHEL Based, using Yum..."
+    $yum install -y java-1.8.0-openjdk > /dev/null
+  elif [[ ! -z $brew ]]; then
+    echo "OS: OSX Based, using Brew..."
+    $brew install java > /dev/null
+  else
+    echo "No package manager detected, failed to install Java8"
+    exit 1
+  fi
+fi
+
 echo "Downloading Spark $spark_version..."
 curl --progress -o $HOME/spark-$spark_version.tgz $spark_url
 cd $HOME
-tar xzf $HOME/spark-$spark_version.tgz
+[[ -d spark-$spark_version ]] || mkdir spark-$spark_version && tar xzf $HOME/spark-$spark_version.tgz -C spark-$spark_version --strip-components 1
 echo -e "Extracting Spark $spark_version...\n"
-cd spark-$spark_version-bin-without-hadoop
+cd spark-$spark_version
 
 echo "Downloading Hadoop $hadoop_version..."
 curl --progress -o ./hadoop-$hadoop_version.tar.gz $hadoop_url
 echo -e "Extracting Hadoop $hadoop_version...\n"
-tar xfz hadoop-$hadoop_version.tar.gz
+[[ -d hadoop ]] || mkdir hadoop && tar xzf hadoop-$hadoop_version.tar.gz -C hadoop --strip-components 1
 
 current_dir=$(pwd)
 default_network=$(route | grep 'default' | awk '{if ($8 ~ /eth[0-9]+/){ print $8 }}')
@@ -68,7 +93,7 @@ ip=$(ifconfig $default_network | awk '{if ($1 ~ /^inet$/){ print $0 }}' | grep -
 
 # Default Core Site Conflicts with ours, so get rid of it.
 # Also clean up left over archives.
-rm $current_dir/hadoop-2.7.1/etc/hadoop/core-site.xml
+[[ -d $current_dir/hadoop/etc/hadoop/core-site.xml ]] || rm $current_dir/hadoop/etc/hadoop/core-site.xml
 rm $HOME/spark-$spark_version.tgz
 rm hadoop-$hadoop_version.tar.gz
 
@@ -106,9 +131,9 @@ if $hadoop_configuration ; then
 fi
 
 echo -e "Creating Spark Environment Configuration...\n"
-hadoop_path=$($current_dir/hadoop-$hadoop_version/bin/hadoop classpath)
+hadoop_path=$($current_dir/hadoop/bin/hadoop classpath)
 echo "SPARK_CLASSPATH=\"$hadoop_path\"" > $current_dir/conf/spark-env.sh
-echo "LD_LIBRARY_PATH=$current_dir/hadoop-$hadoop_version/lib/native" >> $current_dir/conf/spark-env.sh
+echo "LD_LIBRARY_PATH=$current_dir/hadoop/lib/native" >> $current_dir/conf/spark-env.sh
 echo "SPARK_LOCAL_IP=$ip" >> $current_dir/conf/spark-env.sh
 chmod +x $current_dir/conf/spark-env.sh
 
