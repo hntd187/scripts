@@ -1,0 +1,84 @@
+! Fonts
+Xft.dpi: 132
+Xft.antialias: true
+Xft.rgba: rgb
+Xft.hinting: true
+Xft.autohint: true
+Xft.hintstyle: hintfull
+
+! General Terminal Config
+URxvt*termName: rxvt-unicode-256color
+URXvt*urgentOnBell: true
+URxvt*loginShell: true
+URxvt*meta: ignore
+URxvt*utmpInhibit: true
+URxvt*inheritPixmap: false
+URxvt*transparent: false
+
+! Scrollbar Config
+URxvt*scrollstyle: plain
+URxvt*scrollBar: true
+URxvt*scrollBar_right: true
+
+! Color Scheme (I made it up.)
+URxvt*depth: 32
+URxvt*background: [85]#000000
+URxvt*foreground: #d9e6f2
+URxvt*color0: #454545
+URxvt*color1: #ff8812
+URxvt*color2: #12ff88
+URxvt*color3: #88ff12
+URxvt*color4: #8812ff
+URxvt*color5: #ff1288
+URxvt*color6: #1288ff
+URxvt*color7: #c4c4c4
+URxvt*color8: #454545
+URxvt*color9: #ff8812
+URxvt*color10: #12ff88
+URxvt*color11: #88ff12
+URxvt*color12: #8812ff
+URxvt*color13: #ff1288
+URxvt*color14: #1288ff
+URxvt*color15: #c4c4c4
+
+! Icon, I just took whatever looked good.
+URxvt*iconFile: /usr/share/icons/hicolor/scalable/apps/caja.svg
+
+! Font, I bounced around a lot, but chose this mostly because Terminus was
+! either too big or too small.
+URxvt*font: xft:Droid Sans Mono:pixelsize=11:Regular
+URxvt*boldFont: xft:Droid Sans Mono:pixelsize=11:Bold
+URxvt*italicFont: xft:Droid Sans Mono:pixelsize=11:Italic
+URxvt*boldItalicFont: xft:Droid Sans Mono:pixelsize=11:Bold:Italic
+URxvt*letterSpace: -1
+
+! Perl Addons
+URxvt*perl-ext-common: default,matcher,clipboard,vtwheel
+
+! Matcher Config
+URxvt*matcher.button: 1
+URxvt.matcher.rend.0: Uline Bold fg5
+URxvt*url-launcher: /usr/bin/chromium-browser
+
+! Tabbedex Config
+URxvt*tabbed.tabbar-fg: 2
+URxvt*tabbed.tabbar-bg: 0
+URxvt*tabbed.tab-fg: 2
+URxvt*tabbed.tab-bg: 0
+URxvt*tabbed.autohide: yes
+URxvt*tabbed.new-button: yes
+URxvt*tabbed.title: yes
+
+! Key Binds, most are default or what Im used to
+URxvt*keysym.C-Delete: perl:matcher:last
+URxvt*keysym.M-Delete: perl:matcher:list
+URxvt*keysym.M-c: perl:clipboard:copy
+URxvt*keysym.M-v: perl:clipboard:paste
+
+! For Control-Shift bindings to work
+URxvt*iso14755: false
+URxvt*iso14755_52: false
+
+! My copy and paste commands for clipboard
+URxvt*clipboard.copycmd:  xsel -ib
+URxvt*clipboard.pastecmd: xsel -ob
