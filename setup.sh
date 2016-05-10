@@ -46,8 +46,8 @@ echo -e "Installing Spotify and Sublime...\n"
 sudo apt-get -y install spotify-client sublime-text-installer > /dev/null
 [[ $# -eq 1 ]] && echo "Install extras failed..." && exit 1;
 
-echo "Upgrading packages..."
-sudo apt-get upgrade > /dev/null
+echo -e "Upgrading packages...\n"
+sudo apt-get -y upgrade > /dev/null
 
 if [[ ! -e ~/.config/tilda/config_0 ]]; then
   echo -e "Creating tilda configuration...\n"
@@ -68,7 +68,13 @@ fi
 
 echo -e "Downloading Jetbrains IDEA $idea_version from $idea_url...\n"
 curl -#L -o ~/$idea_filename -C - $idea_url
+
 idea_folder=$(tar -tf ~/$idea_filename | head -1 | cut -d/ -f1)
+echo -e "Unarchiving $idea_filename...\n"
 tar -xzf ~/$idea_filename -C ~/
 
+echo -e "Cleaning up $idea_filename...\n"
+rm ~/$idea_filename
+
+echo -e "Running Jetbrains IDEA $idea_version...\n"
 ~/$idea_folder/bin/idea.sh
