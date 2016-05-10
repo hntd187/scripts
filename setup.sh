@@ -46,6 +46,8 @@ echo -e "Installing Spotify and Sublime...\n"
 sudo apt-get -y install spotify-client sublime-text-installer > /dev/null
 [[ $# -eq 1 ]] && echo "Install extras failed..." && exit 1;
 
+echo "Upgrading packages..."
+sudo apt-get upgrade > /dev/null
 
 if [[ ! -e ~/.config/tilda/config_0 ]]; then
   echo -e "Creating tilda configuration...\n"
