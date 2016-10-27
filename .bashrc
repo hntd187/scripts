@@ -1,67 +1,63 @@
-[[ $TERM != "screen" ]] && exec tmux
+#!/bin/bash
 
-TERM=rxvt-unicode-256color
-HADOOP=$(readlink -f $(which hadoop))
-JAVA=$(readlink -f $(which javac))
-export JAVA_HOME=${JAVA%/*/*}
-export HADOOP_HOME=${HADOOP%/*/*}
-export LD_LIBRARY_PATH=$HADOOP_HOME/lib/native
-export SPARK_LOCAL_IP=$(ifconfig $(route | grep 'default' | awk '{if ($8 ~ /eth[0-9]+/){ print $8 }}') | grep "inet " | awk '{print $2}' | cut -d: -f2)
-export EDITOR=vim
-AWS_CONFIG=~/.aws/credentials
-if [[ -r $AWS_CONFIG ]]; then
-  ACCESS_KEY=$(cat $AWS_CONFIG | grep '^aws_access_key_id' | grep -o '[A-Z0-9]*')
-  SECRET_KEY=$(cat $AWS_CONFIG | grep '^aws_secret_access_key' | grep -Eo '[0-9a-zA-Z\/+=]{40}')
-fi
-export AWS_ACCESS_KEY_ID=$ACCESS_KEY
-export AWS_SECRET_ACCESS_KEY=$SECRET_KEY
-
+# If an interactive prompt continue, otherwise stop executing this.
 case $- in
     *i*) ;;
       *) return;;
 esac
-HISTCONTROL=ignoreboth
-shopt -s histappend
-HISTSIZE=1000
-HISTFILESIZE=2000
-shopt -s checkwinsize
-[ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
-if [ -z "${debian_chroot:-}" ] && [ -r /etc/debian_chroot ]; then
-    debian_chroot=$(cat /etc/debian_chroot)
-fi
 
 PS1='\[\e[0;32m\]\u\[\e[m\] \[\e[1;34m\]\w\[\e[m\]: \[\e[1;32m\]\$ \[\e[m\]\[\e[1;37m\]➜ \[\033[0m\]'
-case "$TERM" in
-    xterm*|rxvt*) 
-      color_prompt=yes
-      ;;
-esac
-if [ -n "$force_color_prompt" ]; then
-    if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
-	color_prompt=yes
-    else
-	color_prompt=
-    fi
-fi
-if [ -x /usr/bin/dircolors ]; then
-    test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
-    alias ls='ls --color=auto'
-    alias grep='grep --color=auto'
-    alias fgrep='fgrep --color=auto'
-    alias egrep='egrep --color=auto'
-fi
-alias ll='ls -lF'
-alias la='ls -A'
-alias l='ls -CF'
-alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
+
+# Source aliases if they exist...
 if [ -f ~/.bash_aliases ]; then
     . ~/.bash_aliases
 fi
 
+export TERM=xterm-256color
+export JAVA_HOME=$(dirname $(dirname $(readlink -f $(which javac))))
+export SPARK_LOCAL_IP=$(mip)
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/apps/hadoop/lib/native
+
+if [[ -e ~/aws.sh ]]; then
+  source ~/aws.sh
+fi
+
+# Colored Man Pages, which are fantastic
+man() {
+  env \
+    LESS_TERMCAP_mb=$(printf "\e[1;31m") \
+    LESS_TERMCAP_md=$(printf "\e[1;31m") \
+    LESS_TERMCAP_me=$(printf "\e[0m") \
+    LESS_TERMCAP_se=$(printf "\e[0m") \
+    LESS_TERMCAP_so=$(printf "\e[1;44;33m") \
+    LESS_TERMCAP_ue=$(printf "\e[0m") \
+    LESS_TERMCAP_us=$(printf "\e[1;32m") \
+      man "$@"
+}
+
+HISTCONTROL=ignoreboth
+HISTSIZE=1000
+HISTFILESIZE=2000
+
+shopt -s histappend
+shopt -s checkwinsize
+shopt -s globstar
+
+# make less more friendly for non-text input files, see lesspipe(1)
+[ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
+
+# set variable identifying the chroot you work in (used in the prompt below)
+if [ -z "${debian_chroot:-}" ] && [ -r /etc/debian_chroot ]; then
+    debian_chroot=$(cat /etc/debian_chroot)
+fi
+
+# enable programmable completion features (you don't need to enable
+# this, if it's already enabled in /etc/bash.bashrc and /etc/profile
+# sources /etc/bash.bashrc).
 if ! shopt -oq posix; then
   if [ -f /usr/share/bash-completion/bash_completion ]; then
     . /usr/share/bash-completion/bash_completion
   elif [ -f /etc/bash_completion ]; then
     . /etc/bash_completion
-  fi
+  fi  
 fi
