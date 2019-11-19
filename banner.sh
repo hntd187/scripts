@@ -2,10 +2,10 @@
 zip=$(curl -s ipinfo.io/postal)
 
 echo ""
-echo -e "\$$(hostname)$" | toilet -t  -F border --gay --font mono12
-echo -e "  Date: $(date)" | toilet -t --gay --font term
-echo -e "  Uptime: $(uptime -p)" | toilet -t --gay --font term
+echo "Hostname" | toilet -t  -F border --gay --font mono9
+echo " Date: $(date)"
+echo " Uptime: $(uptime)"
 echo ""
-echo "  Weather for: $zip" | toilet -t --gay --font term
-weather -q 18944 | awk '{print " ",$0}' | toilet -t --gay --font term
+echo " Weather for: $zip"
+ansiweather -a false -s true -u imperial -l "$(curl -s ipinfo.io | jq -rM '"\(.city),\(.country)"')"
 echo ""
